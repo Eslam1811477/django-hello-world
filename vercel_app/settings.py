@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'example'
+    'user',
+    'student'
 ]
 
 MIDDLEWARE = [
@@ -76,7 +77,16 @@ WSGI_APPLICATION = 'vercel_app.wsgi.app'
 # Note: Django modules for using databases are not support in serverless
 # environments like Vercel. You can use a database over HTTP, hosted elsewhere.
 
-DATABASES = {}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'defaultdb',
+        'USER': 'avnadmin',
+        'PASSWORD': 'AVNS_PfBSaErmO4-JIlQD0-u',
+        'HOST': 'pg-108a9f3e-eslamelnemery477-b5b4.a.aivencloud.com',
+        'PORT': '28987',
+    }
+}
 
 
 # Password validation
