@@ -2,7 +2,6 @@ from django.http import JsonResponse
 from .models import User
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from .models import User
 from utils.jwt import generate_token,jwt_required
 from utils.password import check_pass,hash_pass
@@ -38,7 +37,6 @@ initialize_users()
 
 
 
-@csrf_exempt
 def user_login_view(request):
     res = {
         'data': {},
@@ -67,7 +65,6 @@ def user_login_view(request):
     return JsonResponse(res)
 
 
-@csrf_exempt
 @jwt_required
 def create_user(request):
     res = {
