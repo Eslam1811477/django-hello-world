@@ -1,15 +1,19 @@
 {
-  "builds": [
-    {
-      "src": "academy/wsgi.py",
-      "use": "@vercel/python",
-      "config": {"maxLambdaSize": "15mb", "runtime": "python3.9"}
+    "version": 2,
+    "builds": [
+      {
+        "src": "vercel_app/wsgi.py",
+        "use": "@now/python"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "/vercel_app/wsgi.py"
+      }
+    ],
+    "env": {
+      "DJANGO_SETTINGS_MODULE": "vercel_app.settings"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "academy/wsgi.py"
-    }
-  ]
-}
+  }
+  
