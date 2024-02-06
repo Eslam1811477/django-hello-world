@@ -1,10 +1,8 @@
 from .models import Student
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from utils.jwt import jwt_required
 
 
-@csrf_exempt
 @jwt_required
 def create_student(request):
     res = {
