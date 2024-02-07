@@ -1,8 +1,11 @@
 from .models import Student
 from django.http import JsonResponse
 from utils.jwt import jwt_required
+from django.views.decorators.csrf import csrf_exempt
+import json
+from django.core.serializers import serialize
 
-
+@csrf_exempt
 @jwt_required
 def create_student(request):
     res = {
@@ -57,6 +60,57 @@ def create_student(request):
 
                 res['msg'] = 'Student registration successful'
                 res['actionDone'] = True
+    else:
+        res['msg'] = 'Invalid request method'
+
+    return JsonResponse(res)
+
+
+
+
+@jwt_required
+def get_all_students(request):
+    res = {
+        'data': {},
+        'msg': '',
+        'actionDone': False
+    }
+
+    if request.method == 'GET':
+        students = Student.objects.all()
+
+        serialized_students = serialize('json', students)
+
+        students_data = json.loads(serialized_students)
+
+        res['data'] = students_data
+        res['msg'] = 'All students retrieved successfully'
+        res['actionDone'] = True
+    else:
+        res['msg'] = 'Invalid request method'
+
+    return JsonResponse(res)
+
+
+@jwt_required
+def get_single_student(request, student_id):
+    res = {
+        'data': {},
+        'msg': '',
+        'actionDone': False
+    }
+
+    if request.method == 'GET':
+        try:
+            student = Student.objects.get(id=student_id)
+            serialized_student = serialize('json', [student])
+            student_data = json.loads(serialized_student)[0]['fields']
+            
+            res['data'] = student_data
+            res['msg'] = 'Student retrieved successfully'
+            res['actionDone'] = True
+        except Student.DoesNotExist:
+            res['msg'] = 'Student not found'
     else:
         res['msg'] = 'Invalid request method'
 
