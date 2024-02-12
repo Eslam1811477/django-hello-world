@@ -4,8 +4,12 @@ from utils.jwt import jwt_required
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.core.serializers import serialize
+from django.views.decorators.http import require_http_methods
+from django.http import QueryDict
+
 
 @csrf_exempt
+@require_http_methods(["POST"])
 @jwt_required
 def create_student(request):
     res = {
@@ -69,6 +73,7 @@ def create_student(request):
 
 
 @jwt_required
+@require_http_methods(["GET"])
 def get_all_students(request):
     res = {
         'data': {},
@@ -93,6 +98,7 @@ def get_all_students(request):
 
 
 @jwt_required
+@require_http_methods(["GET"])
 def get_single_student(request, student_id):
     res = {
         'data': {},
@@ -113,5 +119,71 @@ def get_single_student(request, student_id):
             res['msg'] = 'Student not found'
     else:
         res['msg'] = 'Invalid request method'
+
+    return JsonResponse(res)
+
+
+
+@csrf_exempt
+@jwt_required
+@require_http_methods(["DELETE"])
+def delete_student(request,student_id):
+    res = {
+        'data': {},
+        'msg': '',
+        'actionDone': False
+    }
+
+    try:
+        if not student_id:
+            raise ValueError("student_id is missing in form data")
+
+        student = Student.objects.get(id=student_id)
+        student.delete()
+        res['msg'] = 'Student deleted successfully'
+        res['actionDone'] = True
+    except ValueError as ve:
+        res['msg'] = str(ve)
+    except Student.DoesNotExist:
+        res['msg'] = 'Student not found'
+
+    return JsonResponse(res)
+
+
+
+
+@csrf_exempt
+@jwt_required
+@require_http_methods(["PUT"])
+def update_student(request, student_id):
+    res = {
+        'data': {},
+        'msg': '',
+        'actionDone': False
+    }
+
+    try:
+        if not student_id:
+            raise ValueError("student_id is missing")
+        student = Student.objects.get(id=student_id)
+        updated_data = json.loads(request.body.decode('utf-8'))
+
+
+
+
+
+        print(updated_data)
+
+        for key, value in updated_data.items():
+            setattr(student, key, value)
+
+        student.save()
+
+        res['msg'] = 'Student updated successfully'
+        res['actionDone'] = True
+    except ValueError as ve:
+        res['msg'] = str(ve)
+    except Student.DoesNotExist:
+        res['msg'] = 'Student not found'
 
     return JsonResponse(res)

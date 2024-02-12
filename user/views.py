@@ -32,7 +32,7 @@ def initialize_users():
     else:
         print("Admin user already exists.")
 
-initialize_users()
+# initialize_users()
 
 
 
