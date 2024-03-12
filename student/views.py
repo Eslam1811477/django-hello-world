@@ -1,11 +1,15 @@
 from .models import Student
 from django.http import JsonResponse
-from utils.jwt import jwt_required
-from django.views.decorators.csrf import csrf_exempt
+import os
+import secrets
+from django.views.static import serve
+from django.conf import settings
 import json
 from django.core.serializers import serialize
-from django.views.decorators.http import require_http_methods
 from django.http import QueryDict
+from utils.jwt import jwt_required
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 
 
 @csrf_exempt
@@ -68,6 +72,65 @@ def create_student(request):
         res['msg'] = 'Invalid request method'
 
     return JsonResponse(res)
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@jwt_required
+def upload_img(request):
+    res = {
+        'data': {},
+        'msg': '',
+        'actionDone': False
+    }
+    try:
+        image = request.FILES.get('image')
+        stu_id = request.POST.get('id')
+        
+        _, file_extension = os.path.splitext(image.name)
+
+        filename = secrets.token_hex(5) + file_extension.lower()
+        save_path = os.path.join(settings.MEDIA_ROOT, filename)
+
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        with open(save_path, 'wb') as f:
+            for chunk in image.chunks():
+                f.write(chunk)
+
+        image_url = os.path.join(settings.MEDIA_URL, filename)
+        student = Student.objects.get(id=stu_id)
+
+        if student:
+            student.img_name = filename
+            student.save()
+
+            res['data']['image_url'] = image_url
+            res['msg'] = 'The image has been uploaded successfully'
+            res['actionDone'] = True
+        else:
+            res['msg'] = 'Student not found'
+
+    except Exception as e:
+        res['msg'] = f'Error: {str(e)}'
+        res['actionDone'] = False
+
+    return JsonResponse(res)
+
+
+@csrf_exempt
+@require_http_methods(["GET"])
+@jwt_required
+def serve_image(request, student_id):
+    student = Student.objects.get(id=student_id)
+    if(student):
+        return serve(request, student.img_name, document_root=settings.MEDIA_ROOT)
+    else:
+        return JsonResponse({
+                'msg': 'Student number not found',
+                'actionDone': False
+        })
+
+
+
 
 
 
@@ -167,10 +230,6 @@ def update_student(request, student_id):
             raise ValueError("student_id is missing")
         student = Student.objects.get(id=student_id)
         updated_data = json.loads(request.body.decode('utf-8'))
-
-
-
-
 
         print(updated_data)
 

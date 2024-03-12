@@ -10,6 +10,7 @@ class Student(models.Model):
     mother_phone_number = models.CharField(max_length=20, null=True, blank=True)
     father_phone_number = models.CharField(max_length=20, null=True, blank=True)
     gender = models.CharField(max_length=10, null=True, blank=True)
+    img_name = models.CharField(null=True)
 
     def __str__(self):
         return self.name
