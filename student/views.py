@@ -6,7 +6,6 @@ from django.views.static import serve
 from django.conf import settings
 import json
 from django.core.serializers import serialize
-from django.http import QueryDict
 from utils.jwt import jwt_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -212,7 +211,34 @@ def delete_student(request,student_id):
 
     return JsonResponse(res)
 
-
+@jwt_required
+@require_http_methods(["GET"])
+def students_search(request):
+    body_unicode = request.body.decode('utf-8')
+    
+    if body_unicode:
+        data = json.loads(body_unicode)
+        
+        name = data.get('name', '')
+        school = data.get('school', '')
+        
+        students = Student.objects.all()
+        
+        if name:
+            students = students.filter(name__icontains=name)
+        if school:
+            students = students.filter(school__icontains=school)
+        
+        results = [{'name': student.name, 'pk':student.pk} for student in students]
+        
+        response_data = {
+            'data': results,
+            'msg': 'Search successful',
+            'actionDone': True
+        }
+        return JsonResponse(response_data)
+    else:
+        return JsonResponse({'error': 'No JSON data received.'}, status=400)
 
 
 @csrf_exempt
